@@ -29,16 +29,20 @@ void tst() {
     for (int i=0; i<720; i++) {
         printf("Permutation %i/720: \n", i);
         int_to_lehmer_i(inv_table, 6, i);
-        printf("\tLehmer:         "); print_arr_n(inv_table, 6);
+        printf("\tLehmer:          "); print_arr_n(inv_table, 6);
         adjust_lehmer_to_inv_table(inv_table, 6);
-        printf("\tInversion table:"); print_arr_n(inv_table, 6);
+        printf("\tInversion table: "); print_arr_n(inv_table, 6);
+        adjust_inv_table_to_lehmer(inv_table, 6);
+        printf("\tLehmer(inv_table):"); print_arr_n(inv_table, 6);
 
         memcpy(c, (uint8_t[6]){'a','b','c','d','e','f'}, 6);
         permute_array_with_int_i(c, 6, i);
-        printf("\tAlphabet:       "); print_arr_chars(c, 6);
+        printf("\tAlphabet:         "); print_arr_chars(c, 6);
+        int perm_num = compute_permutation_number_i(c, 6);
+        printf("\tPermutation number: %d\n", perm_num);
     }
 }
 
-int main(int argc, const char **argv) {
+int main(int argc, char *argv[]) {
     tst();
 }
