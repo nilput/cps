@@ -84,7 +84,7 @@ void adjust_inv_table_to_lehmer(uint8_t *inv_table, int nelems) {
     for (int i=nelems-1; i>=0; i--) {
         for (int j=i-1; j>=0; j--) {
             if (inv_table[j] <= inv_table[i]) {
-                inv_table[i]++;
+                inv_table[i]--;
             }
         }
     }
