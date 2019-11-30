@@ -15,6 +15,7 @@ const static struct bn large_facs [256] = {
 
 static uint32_t small_facs [13] = {0};
 static struct bn large_facs [256] = {0};
+static int nbits_facs[256] = {0};
 
 static void die(char *msg) {
     fprintf(stderr, "Fatal Error: %s\n", msg);
@@ -34,6 +35,18 @@ void generate() {
         }
         bignum_mul(large_facs + i - 1, &counter, large_facs + i);
         bignum_inc(&counter);
+    }
+    for (int i=0; i<256; i++) {
+        struct bn tmp_a;
+        struct bn tmp_b;
+        bignum_assign(&tmp_a, large_facs + i);
+        int nbits = 0;
+        while (!bignum_is_zero(&tmp_a)) {
+            bignum_rshift(&tmp_a, &tmp_b, 1); /* b = a >> nbits */
+            bignum_assign(&tmp_a, &tmp_b);
+            nbits++;
+        }
+        nbits_facs[i] = nbits;
     }
 }
 
@@ -66,6 +79,16 @@ void export(char *outfile) {
         fprintf(f, "\n\n");
     }
     fprintf(f, "};\n");
+
+    line_at_count = 0;
+    line_at = 8;
+    fprintf(f, "const static uint32_t nbits_facs [256] = {");
+    for (int i=0; i<256; i++) {
+        if (!(line_at_count++ % line_at))
+            fprintf(f, "\n");
+        fprintf(f, "% 5lu, ", (unsigned long) nbits_facs[i]);
+    }
+    fprintf(f, "\n};\n");
 
     fprintf(f, "#endif //FACS_H");
     fclose(f);

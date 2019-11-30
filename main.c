@@ -2,8 +2,15 @@
 #include <string.h>
 #include <stdlib.h>
 #include "cps.h"
+#include "bnx.h"
+#include "xps.h"
+#include "vg.h"
 
 
+void die(char *msg) {
+    fprintf(stderr, "Error: %s\n", msg);
+    exit(1);
+}
 void print_arr_n(uint8_t *arr, int len) {
     printf("{");
     for (int i=0; i<len; i++) {
@@ -40,9 +47,54 @@ void tst() {
         printf("\tAlphabet:         "); print_arr_chars(c, 6);
         int perm_num = compute_permutation_number_i(c, 6);
         printf("\tPermutation number: %d\n", perm_num);
+        assert(perm_num == i);
     }
 }
 
 int main(int argc, char *argv[]) {
-    tst();
+    
+    struct vgstate vg;
+    vg_init(&vg, argc, argv);
+    if (vg_get_boolean(&vg, "--test-cps")) {
+        tst();
+    }
+    else if (vg_get_boolean(&vg, "--encode")) {
+        uint8_t data[256];;
+        int data_len = fread(data, 1, 256, stdin);
+        uint8_t xps_data[256];;
+        int xps_data_len;
+        xps_enc(data, data_len, xps_data, &xps_data_len);
+        fprintf(stdout, "%d.", data_len);
+        fwrite(xps_data, 1, xps_data_len, stdout);
+        int output_size = xps_data_len;
+        fflush(stdout);
+        fprintf(stderr, "\n"
+                        "Input size:  %d\n"
+                        "Output size: %d\n"
+                        "Saving:      %.2f%%\n", data_len, output_size, 100.0 * (1.0 - ((double) output_size / data_len)));
+    }
+    else if (vg_get_boolean(&vg, "--decode")) {
+        uint8_t in_data[257];;
+        int input_len = fread(in_data, 1, 256, stdin);
+        uint8_t *xps_data = in_data;
+        for (int i=0; i<4 && *xps_data != '.'; i++, xps_data++)
+            ;
+        if (*(xps_data++) != '.')
+            die("invalid input!");
+        assert(input_len >= 1);
+        int xps_data_len = input_len - (xps_data - in_data);
+        uint8_t set_len = atoi(in_data);
+        uint8_t data[256];
+        xps_dec(xps_data, xps_data_len, set_len, data);
+        qk_array_sort(data, set_len);
+        fwrite(data, 1, set_len, stdout);
+    }
+    else {
+        printf(""
+"       Options:\n"
+"       --encode        read a set of bytes from stdin, writing encoded data to stdout\n"
+"       --decode        read a set of bytes from stdin, writing decoded data to stdout\n"
+"       --test-cps      test permutations module\n"
+        );
+    }
 }

@@ -64,26 +64,20 @@ void int_to_lehmer_i(uint8_t *inv_table, int nelems, int code) {
 //abcd -> c abd -> cd ab-> cdb a -> cdba
 //{2, 2, 1, 0} -> {2, 3, 1, 0}
 void adjust_lehmer_to_inv_table(uint8_t *inv_table, int nelems) {
-    uint8_t count_arr[256];
-    for (int i=0; i<nelems; i++) {
-        count_arr[i] = i;
-    }
-    for (int i=0; i<nelems; i++) {
-        int idx = inv_table[i];
-        int final_idx = count_arr[idx];
-        inv_table[i] = final_idx;
-        //remove count_arr[idx]
-        int count_len = nelems - i - 1;
-        for (int j=idx; j<count_len; j++) {
-            count_arr[j] = count_arr[j+1];
+    for (int i=nelems-1; i>=0; i--) {
+        for (int j=i+1; j<nelems; j++) {
+            if (inv_table[j] >= inv_table[i]) {
+                inv_table[j]++;
+            }
         }
     }
 }
 //{2, 3, 1, 0} -> {2, 2, 1, 0}
 void adjust_inv_table_to_lehmer(uint8_t *inv_table, int nelems) {
     for (int i=nelems-1; i>=0; i--) {
+        int val = inv_table[i];
         for (int j=i-1; j>=0; j--) {
-            if (inv_table[j] <= inv_table[i]) {
+            if (inv_table[j] <= val) {
                 inv_table[i]--;
             }
         }
@@ -110,7 +104,7 @@ void permute_array_with_int_i(uint8_t *arr, int nelems, int code) {
     permute_array_with_int(arr, nelems, &large_code);
 }
 
-static int qk_array_sort(uint8_t *arr, int nelems)
+int qk_array_sort(uint8_t *arr, int nelems)
 {
     if (nelems == 0)
         return 0;
@@ -185,10 +179,29 @@ void compute_permutation_number(struct bn *code, uint8_t *arr, int nelems) {
     uint8_t inv_table[256];
     for (int i=0; i<nelems; i++) {
         int idx = array_bsearch(sorted, 0, nelems, arr[i]);
-        assert(idx != -1);
         inv_table[i] = idx;
+#ifdef DBG
+        assert(idx != -1);
+        for (int j=i-1; j>=0; j--) {
+            assert(inv_table[j] != idx);
+        }
+#endif // DBG
     }
-    printf("\tInversion table:"); print_arr_n(inv_table, nelems);
+    adjust_inv_table_to_lehmer(inv_table, nelems);
+    struct bn perm_num;
+    bignum_from_int(&perm_num, 0);
+    for (int i=0; i<nelems; i++) {
+        int digit = inv_table[nelems - i - 1];
+        const struct bn *fac = large_facs + i;
+
+        struct bn tmp;
+        struct bn multiplied;
+        bignum_from_int(&tmp, digit);
+        bignum_mul((struct bn *)fac, &tmp, &multiplied);
+        bignum_add(&multiplied, &perm_num, &tmp);
+        bignum_assign(&perm_num, &tmp);
+    }
+    bignum_assign(code, &perm_num);
 }
 int  compute_permutation_number_i(uint8_t *arr, int nelems) {
     struct bn large_code;
