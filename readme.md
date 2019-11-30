@@ -1,4 +1,7 @@
+A way to hide elements of a set inside the rest of the elements' order!
 
+
+```
 input: acekolswq
 
 Input size:  9
@@ -38,3 +41,4 @@ Output size: 42
 Saving:      32.26%
 62.ABcCjsfxuobwOMNplkgynzedvIiDhGmJPFaHtrKLqE
 decoded: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+```
