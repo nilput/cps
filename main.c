@@ -66,14 +66,14 @@ int main(int argc, char *argv[]) {
         uint8_t xps_data[256];;
         int xps_data_len;
         xps_enc(data, data_len, xps_data, &xps_data_len);
-        fprintf(stdout, "%d.", data_len);
+        int len_len = fprintf(stdout, "%d.", data_len);
         fwrite(xps_data, 1, xps_data_len, stdout);
         int output_size = xps_data_len;
         fflush(stdout);
         fprintf(stderr, "\n"
                         "Input size:  %d\n"
                         "Output size: %d\n"
-                        "Saving:      %.2f%%\n", data_len, output_size, 100.0 * (1.0 - ((double) output_size / data_len)));
+                        "Saving:      %.2f%%\n", data_len, len_len + xps_data_len, 100.0 * (1.0 - ((double) output_size / data_len)));
     }
     else if (vg_get_boolean(&vg, "--decode")) {
         uint8_t in_data[257];;
