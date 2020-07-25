@@ -70,10 +70,11 @@ int main(int argc, char *argv[]) {
         fwrite(xps_data, 1, xps_data_len, stdout);
         int output_size = xps_data_len;
         fflush(stdout);
+        int full_output_size = len_len + xps_data_len;
         fprintf(stderr, "\n"
                         "Input size:  %d\n"
                         "Output size: %d\n"
-                        "Saving:      %.2f%%\n", data_len, len_len + xps_data_len, 100.0 * (1.0 - ((double) output_size / data_len)));
+                        "Saving:      %.2f%%\n", data_len, full_output_size, 100.0 * (1.0 - ((double) full_output_size / data_len)));
     }
     else if (vg_get_boolean(&vg, "--decode")) {
         uint8_t in_data[257];;
