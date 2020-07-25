@@ -61,6 +61,8 @@ int main(int argc, char *argv[]) {
     else if (vg_get_boolean(&vg, "--encode")) {
         uint8_t data[256];;
         int data_len = fread(data, 1, 256, stdin);
+        if (data_len > 0 && data[data_len - 1] == '\n') data_len--;
+        if (data_len > 0 && data[data_len - 1] == '\r') data_len--;
         uint8_t xps_data[256];;
         int xps_data_len;
         xps_enc(data, data_len, xps_data, &xps_data_len);
@@ -81,6 +83,8 @@ int main(int argc, char *argv[]) {
             ;
         if (*(xps_data++) != '.')
             die("invalid input!");
+        if (input_len > 0 && in_data[input_len - 1] == '\n') input_len--;
+        if (input_len > 0 && in_data[input_len - 1] == '\r') input_len--;
         assert(input_len >= 1);
         int xps_data_len = input_len - (xps_data - in_data);
         uint8_t set_len = atoi(in_data);
